@@ -19,23 +19,23 @@ array[dimension,dimension] of var 0..4: chessboard;
 
 %PREDICATES
 predicate square(var int: i1, var int: i2, var int: j1, var int: j2) = 
-  i1 != i2 /\ j1 != j2 /\
+  (i1 = i2 + 1) /\ (j1 = j2 + 1) /\
   chessboard[i1,j1] == 3 /\ chessboard[i1,j2] == 3 /\ chessboard[i2,j1] == 3 /\ chessboard[i2,j2] == 3;
   
 
 % CONSTRAINTS
 
 % putting black boxes on chessboard
-%constraint forall(i in B)(chessboard[blackBoxes[i,1],blackBoxes[i,2]] == 1);
+constraint forall(i in B)(chessboard[blackBoxes[i,1],blackBoxes[i,2]] == 1);
 
-constraint forall(i in i1)(square(i,b,c,d));
-var int: a;
-var int: b;
-var int: c;
-var int: d;
+% putting square shapes on chessboard
+array[1..S,1..4] of var int: sq;
 
-array[1..2] of var 1..N: i1;
-constraint alldifferent(i1);
+constraint forall(i,j in 1..S where i!=j)(sq[i,1] != sq[j,1] \/ sq[i,2] != sq[j,2] \/ sq[i,3] != sq[j,3] \/ sq[i,4] != sq[j,4]);
+
+
+constraint forall(i in 1..S)(square(sq[i,1], sq[i,2], sq[i,3], sq[i,4]));
+
 
 
 % SOLVING CRITERIA
@@ -46,4 +46,4 @@ solve satisfy;
 output [ show_int(2,chessboard[i,j]) ++ 
          if j == N then "\n" else " " endif |
          i in dimension, j in dimension 
-]++[show(i1)];
+]++[show(sq)];
