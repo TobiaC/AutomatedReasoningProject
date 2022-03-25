@@ -1,6 +1,6 @@
 include "globals.mzn";
 
-int: N; % dimension of the cessboard
+int: N; % dimension of the chessboard
 int: L; % number of L shapes
 int: S; % number of squares
 int: R; % number of rectangles
@@ -22,6 +22,8 @@ array[dimension,dimension] of var 0..4: chessboard;
 % PREDICATES
 % *******************
 
+% predicate free_cell(var int: i, var int: j) = chessboard[i,j] = 0;
+
 predicate square(var int: i1, var int: i2, var int: j1, var int: j2) = 
   (i1 = i2+1 \/ i1 = i2-1) /\ (j1 = j2+1 \/ j1 = j2-1) /\
   chessboard[i1,j1] = 3 /\ chessboard[i1,j2] = 3 /\ chessboard[i2,j1] = 3 /\ chessboard[i2,j2] = 3;
@@ -34,12 +36,20 @@ predicate rectangle(var int: i1, var int: j1, var int: i2, var int: j2, var int:
 
   
 predicate l_shape(var int: i1, var int: j1, var int: i2, var int: j2, var int: i3, var int: j3) = 
-  i2 = i3 /\ (j3 = j2+1 \/ j3 = j2-1) /\ (i1 = i2+1 \/ i1 = i2-1) /\ (j1 = j2+1 \/ j1 = j2-1) /\
+  i2 = i3 /\ (j3 = j2+1 \/ j3 = j2-1) /\ (i1 = i2+1 \/ i1 = i2-1) /\ j1=j2 /\
   chessboard[i1,j1] = 2 /\ chessboard[i2,j2] = 2 /\ chessboard[i3,j3] = 2;
   
+  
+predicate free_space(var int: i1, var int: j1) = chessboard[i1,j1] = 0 /\
+                                                 ((chessboard[i1+1,j1] = 0 \/ chessboard[i1-1,j1] = 0) \/
+                                                 (chessboard[i1,j1+1] = 0 \/ chessboard[i1,j1-1] = 0)); 
 % *******************
 % CONSTRAINTS
 % *******************
+% int: Z = N-(R+S+L+num_blackBoxes);
+% array[1..Z,1..2] of var int: fc;
+% constraint forall(i,j in 1..Z where i != j)(fc[i,1] != fc[j,1] \/ fc[i,2] != fc[j,2]);
+% constraint forall(i in 1..Z)(free_cell(fc[i,1], fc[i,2]));
 
 % Squares ------------------------------------------------
 
@@ -93,13 +103,18 @@ constraint forall(i in 1..L)(l_shape(lc[i,1], lc[i,2], lc[i,3], lc[i,4], lc[i,5]
 
 % Other constraints ------------------------------------------------
 
+% top lef corner must  be occupied
 constraint chessboard[1,1] = 1 \/ chessboard[1,1] = 2 \/ chessboard[1,1] = 3 \/ chessboard[1,1] = 4;
+
+% cannot put a black box if the total number of black boxes gets exceeded
 constraint sum(i,j in dimension)(chessboard[i,j]==1)<=num_blackBoxes;
+
+var int: free_space = sum(i,j in 1..N)(free_space(i,j));
 
 % *******************
 % SOLVING 
 % *******************
-solve satisfy;
+solve maximize(free_space);
 
 
 % *******************
@@ -109,4 +124,4 @@ solve satisfy;
 output [ show_int(2,chessboard[i,j]) ++ 
          if j == N then "\n" else " " endif |
          i in dimension, j in dimension 
-]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\n L coordinates ", show(lc)];
+]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\n L coordinates ", show(lc)]++["\nFree space: ",show(free_space)];
