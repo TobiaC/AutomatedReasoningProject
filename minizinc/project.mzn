@@ -16,7 +16,7 @@ set of int: dimension = 1..N;
 % 3 represents square
 % 4 represents rectangle
 
-array[dimension,dimension] of var 0..4: chessboard;
+array[dimension,dimension] of var 0..5: chessboard;
 
 
 % *******************
@@ -55,6 +55,7 @@ constraint forall(i,j in 1..S where i !=j )(
                               endif
                             endif);
 
+
 % putting square shapes on chessboard
 constraint forall(i in 1..S)(square(sq[i,1], sq[i,2], sq[i,3], sq[i,4]));
 
@@ -68,7 +69,7 @@ constraint forall(i,j in 1..R where i != j)(
                                             if rc[i,1] == rc[j,1] 
                                             then rc[i,2] != rc[j,2] /\ rc[i,2] != rc[j,3] /\ rc[i,2] != rc[j,4] /\ rc[i,3] != rc[j,3] /\ rc[i,3] != rc[j,4] /\ rc[i,4] != rc[j,4]
                                             else 
-                                              if  rc[i,2] != rc[j,2] \/ rc[i,2] != rc[j,3] \/ rc[i,2] != rc[j,4] \/ rc[i,3] != rc[j,3] \/ rc[i,3] != rc[j,4] \/ rc[i,4] != rc[j,4]
+                                              if  rc[i,2] == rc[j,2] \/ rc[i,2] == rc[j,3] \/ rc[i,2] == rc[j,4] \/ rc[i,3] == rc[j,3] \/ rc[i,3] == rc[j,4] \/ rc[i,4] == rc[j,4]
                                               then rc[i,1] != rc[j,1]
                                               endif
                                             endif);
@@ -79,8 +80,8 @@ constraint forall(i in 1..R)(rectangle(rc[i,1], rc[i,2], rc[i,3], rc[i,4]));
 
 % Other constraints ----------------------------------------------------------------
 
-% constraint chessboard[1,1] = 1 \/ chessboard[1,1] = 2 \/ chessboard[1,1] = 3 \/ chessboard[1,1] = 4;
-% constraint sum(i,j in 1..N)(chessboard[i,j])<=num_blackBoxes;
+constraint chessboard[1,1] = 1 \/ chessboard[1,1] = 2 \/ chessboard[1,1] = 3 \/ chessboard[1,1] = 4;
+constraint sum(i,j in dimension)(chessboard[i,j]==1)<=num_blackBoxes;
 
 % *******************
 % SOLVING 
