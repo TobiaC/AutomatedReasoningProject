@@ -22,8 +22,6 @@ array[dimension,dimension] of var 0..4: chessboard;
 % PREDICATES
 % *******************
 
-% predicate free_cell(var int: i, var int: j) = chessboard[i,j] = 0;
-
 predicate square(var int: i1, var int: i2, var int: j1, var int: j2) = 
   (i1 = i2+1 \/ i1 = i2-1) /\ (j1 = j2+1 \/ j1 = j2-1) /\
   chessboard[i1,j1] = 3 /\ chessboard[i1,j2] = 3 /\ chessboard[i2,j1] = 3 /\ chessboard[i2,j2] = 3;
@@ -40,16 +38,11 @@ predicate l_shape(var int: i1, var int: j1, var int: i2, var int: j2, var int: i
   chessboard[i1,j1] = 2 /\ chessboard[i2,j2] = 2 /\ chessboard[i3,j3] = 2;
   
   
-predicate free_space(var int: i1, var int: j1) = chessboard[i1,j1] = 0 /\
-                                                 ((chessboard[i1+1,j1] = 0 \/ chessboard[i1-1,j1] = 0) \/
-                                                 (chessboard[i1,j1+1] = 0 \/ chessboard[i1,j1-1] = 0)); 
+predicate free_space(var int: i, var int: j) = chessboard[i,j] = 0;
+
 % *******************
 % CONSTRAINTS
 % *******************
-% int: Z = N-(R+S+L+num_blackBoxes);
-% array[1..Z,1..2] of var int: fc;
-% constraint forall(i,j in 1..Z where i != j)(fc[i,1] != fc[j,1] \/ fc[i,2] != fc[j,2]);
-% constraint forall(i in 1..Z)(free_cell(fc[i,1], fc[i,2]));
 
 % Squares ------------------------------------------------
 
@@ -106,10 +99,13 @@ constraint forall(i in 1..L)(l_shape(lc[i,1], lc[i,2], lc[i,3], lc[i,4], lc[i,5]
 % top lef corner must  be occupied
 constraint chessboard[1,1] = 1 \/ chessboard[1,1] = 2 \/ chessboard[1,1] = 3 \/ chessboard[1,1] = 4;
 
-% cannot put a black box if the total number of black boxes gets exceeded
+% cannot mark a cell with a number different than 0 if it is not part of a figure
 constraint sum(i,j in dimension)(chessboard[i,j]==1)<=num_blackBoxes;
+constraint sum(i,j in dimension)(chessboard[i,j]=2)<=L*3;
+constraint sum(i,j in dimension)(chessboard[i,j]=3)<=S*4;
+constraint sum(i,j in dimension)(chessboard[i,j]=4)<=R*3;
 
-var int: free_space = sum(i,j in 1..N)(free_space(i,j));
+var int: free_space = sum(i,j in dimension)(free_space(i,j));
 
 % *******************
 % SOLVING 
