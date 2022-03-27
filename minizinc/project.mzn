@@ -38,7 +38,8 @@ predicate l_shape(var int: i1, var int: j1, var int: i2, var int: j2, var int: i
   chessboard[i1,j1] = 2 /\ chessboard[i2,j2] = 2 /\ chessboard[i3,j3] = 2;
   
   
-predicate free_space(var int: i, var int: j) = chessboard[i,j] = 0;
+predicate free_space(var int: i, var int: j) = chessboard[i,j] = 0 /\ ((chessboard[i+1,j]=0 \/ chessboard[i-1,j]=0) /\
+                                                                       (chessboard[i,j+1]=0 \/ chessboard[i,j-1]=0));
 
 % *******************
 % CONSTRAINTS
@@ -105,12 +106,12 @@ constraint sum(i,j in dimension)(chessboard[i,j]=2)<=L*3;
 constraint sum(i,j in dimension)(chessboard[i,j]=3)<=S*4;
 constraint sum(i,j in dimension)(chessboard[i,j]=4)<=R*3;
 
-var int: free_space = sum(i,j in dimension)(free_space(i,j));
+var int: fs = sum(i,j in 2..N-1)(free_space(i,j));
 
 % *******************
 % SOLVING 
 % *******************
-solve maximize(free_space);
+solve maximize(fs);
 
 
 % *******************
@@ -120,4 +121,4 @@ solve maximize(free_space);
 output [ show_int(2,chessboard[i,j]) ++ 
          if j == N then "\n" else " " endif |
          i in dimension, j in dimension 
-]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\n L coordinates ", show(lc)]++["\nFree space: ",show(free_space)];
+]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\n L coordinates ", show(lc)]++["\nFree space: ",show(fs)];
