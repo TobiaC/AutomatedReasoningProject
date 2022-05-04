@@ -15,8 +15,15 @@ set of int: dimension = 1..N;
 % 3 represents square
 % 4 represents rectangle
 
-array[dimension,dimension] of var 0..4: chessboard;
+array[dimension,dimension] of var 0..5: chessboard;
 
+%% the following are for representing the rectangle of free space
+var int: i1; 
+var int: i2;
+var int: j1;
+var int: j2;
+
+var int: A = abs(i2-i1+1)*abs(j2-j1+1);
 
 % *******************
 % PREDICATES
@@ -37,10 +44,10 @@ predicate l_shape(var int: i1, var int: j1, var int: i2, var int: j2, var int: i
   i2 = i3 /\ (j3 = j2+1 \/ j3 = j2-1) /\ (i1 = i2+1 \/ i1 = i2-1) /\ j1=j2 /\
   chessboard[i1,j1] = 2 /\ chessboard[i2,j2] = 2 /\ chessboard[i3,j3] = 2;
   
-  
-predicate free_space(var int: i, var int: j) = chessboard[i,j] = 0 /\ ((chessboard[i+1,j]=0 \/ chessboard[i-1,j]=0) /\
-                                                                       (chessboard[i,j+1]=0 \/ chessboard[i,j-1]=0));
 
+predicate free(var int: i1,var int:i2,var int:j1,var int:j2) = forall(i in i1..i2, j in j1..j2)(chessboard[i,j]=0);
+
+ 
 % *******************
 % CONSTRAINTS
 % *******************
@@ -106,12 +113,21 @@ constraint sum(i,j in dimension)(chessboard[i,j]=2)<=L*3;
 constraint sum(i,j in dimension)(chessboard[i,j]=3)<=S*4;
 constraint sum(i,j in dimension)(chessboard[i,j]=4)<=R*3;
 
-var int: fs = sum(i,j in 2..N-1)(free_space(i,j));
+% making the rectangle of free space
+constraint i1<=N /\ i1 >= 1;
+constraint i2<=N /\ i2 >= 1;
+constraint j1<=N /\ j1 >= 1;
+constraint j2<=N /\ j2 >= 1;
+constraint i2>=i1;
+constraint j2>=j1;
+
+constraint forall(iS,iF in i1..i2, jS,jF in j1..j2)(free(iS,iF,jS,jF));
+
 
 % *******************
 % SOLVING 
 % *******************
-solve maximize(fs);
+solve maximize(A); % maximize the area of the rectangle of free space
 
 
 % *******************
@@ -121,4 +137,5 @@ solve maximize(fs);
 output [ show_int(2,chessboard[i,j]) ++ 
          if j == N then "\n" else " " endif |
          i in dimension, j in dimension 
-]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\n L coordinates ", show(lc)]++["\nFree space: ",show(fs)];
+]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\nL coordinates ", show(lc)]++["\nFree space rectangle area: ",show(A)]++
+["\n i1: ",show(i1),"\n i2: ",show(i2),"\n j1: ",show(j1),"\n j2: ",show(j2)];
