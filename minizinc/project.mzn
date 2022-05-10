@@ -75,7 +75,6 @@ predicate rectangle(var int: i1, var int: j1, var int: i2, var int: j2, var int:
 
 predicate l_shape(var int: i1, var int: j1, var int: i2, var int: j2, var int: i3, var int: j3) = 
   i2 = i3 /\ (j3 = j2+1 \/ j3 = j2-1) /\ (i1 = i2+1 \/ i1 = i2-1) /\ j1=j2 /\
-  i1 <= i2 /\ i2 <= i3 /\ j1 <= j2 /\ j2 <= j3 /\ 
   chessboard[i1,j1] = 2 /\ chessboard[i2,j2] = 2 /\ chessboard[i3,j3] = 2;
   
  
@@ -168,7 +167,7 @@ var int: total_weight = rectangles_on_board * rectangle_weight + squares_on_boar
 %                 then free_space_A 
 %                 else total_weight 
 %                 endif);
-solve maximize total_weight;
+solve maximize free_space_A;
 
 % *******************
 % OUTPUT
