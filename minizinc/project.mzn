@@ -6,24 +6,28 @@ int: S; % number of squares in input
 int: R; % number of rectangles in input
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% this is to allow to insert more figures in input while chosing to use just some of them
 var int: rectangles_on_board;
 constraint rectangles_on_board <= R;
-%constraint if total_figures_area < (N*N - num_blackBoxes) /\ R > 0 then rectangles_on_board >= 1 else rectangles_on_board >= 0 endif;
-constraint rectangles_on_board >= 1;
+constraint if total_figures_area < (N*N - num_blackBoxes) /\ R > 0 
+            then rectangles_on_board = R
+            else rectangles_on_board >= 0 
+            endif;
+
 
 var int: ls_on_board;
 constraint ls_on_board <= L;
-%constraint if total_figures_area < (N*N - num_blackBoxes) /\ L > 0 then ls_on_board >= 1 else ls_on_board >= 0 endif;
-constraint ls_on_board >= 1;
+constraint if total_figures_area < (N*N - num_blackBoxes) /\ L > 0 
+            then ls_on_board = L 
+            else ls_on_board >= 0 
+            endif;
+
 
 var int: squares_on_board;
 constraint squares_on_board <= S;
-%constraint if total_figures_area < (N*N - num_blackBoxes) /\ S > 0 then squares_on_board >= 1 else squares_on_board >= 0 endif;
-constraint squares_on_board >= 1;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+constraint if total_figures_area < (N*N - num_blackBoxes) /\ S > 0 
+            then squares_on_board = S 
+            else squares_on_board >= 0 
+            endif;
 
 
 int: num_blackBoxes;
@@ -41,7 +45,7 @@ int: rectangle_weight = 2;
 int: l_shape_weight = 3;
 int: square_weight = 4;
 
-array[dimension,dimension] of var 0..5: chessboard;
+array[dimension,dimension] of var 0..4: chessboard;
 
 %% the following are for representing the rectangle of free space
 var int: i1; 
@@ -57,23 +61,24 @@ var int: free_space_A = abs(i2-i1+1)*abs(j2-j1+1);
 
 predicate square(var int: i1, var int: i2, var int: j1, var int: j2) = 
   (i1 = i2+1 \/ i1 = i2-1) /\ (j1 = j2+1 \/ j1 = j2-1) /\
-  i1 <= i2 /\ j1 <= j2 /\ % simmetry
+  i1 <= i2 /\ j1 <= j2 /\ 
   chessboard[i1,j1] = 3 /\ chessboard[i1,j2] = 3 /\ chessboard[i2,j1] = 3 /\ chessboard[i2,j2] = 3;
 
   
 predicate rectangle(var int: i1, var int: j1, var int: i2, var int: j2, var int: i3, var int: j3) =
   (((i1 = i2 /\ i2 = i3) /\ ((j2 = j1+1 \/ j2 = j1-1) /\ (j3 = j2+1 \/ j3 = j2-1) /\ (j3 != j1))) \/
   ((j1 = j2 /\ j2 = j3) /\ ((i2 = i1+1 \/ i2 = i1-1) /\ (i3 = i2+1 \/ i3 = i2-1) /\ (i3 != i1)))) /\
-  i1 <= i2 /\ i2 <= i3 /\ j1 <= j2 /\ j2 <= j3 /\ % simmetry
+  i1 <= i2 /\ i2 <= i3 /\ j1 <= j2 /\ j2 <= j3 /\
   (chessboard[i1,j1] = 4 /\ chessboard[i2,j2]=4 /\ chessboard[i3,j3] = 4);
+
 
 predicate l_shape(var int: i1, var int: j1, var int: i2, var int: j2, var int: i3, var int: j3) = 
   i2 = i3 /\ (j3 = j2+1 \/ j3 = j2-1) /\ (i1 = i2+1 \/ i1 = i2-1) /\ j1=j2 /\
-  i1 <= i2 /\ i2 <= i3 /\ j1 <= j2 /\ j2 <= j3 /\ % simmetry
+  i1 <= i2 /\ i2 <= i3 /\ j1 <= j2 /\ j2 <= j3 /\ 
   chessboard[i1,j1] = 2 /\ chessboard[i2,j2] = 2 /\ chessboard[i3,j3] = 2;
   
 
-predicate free(var int: i1,var int:i2,var int:j1,var int:j2) = forall(i in i1..i2, j in j1..j2)(chessboard[i,j]=5);
+predicate free(var int: i1,var int:i2,var int:j1,var int:j2) = forall(i in i1..i2, j in j1..j2)(chessboard[i,j]=0);
 
  
 % *******************
@@ -140,7 +145,7 @@ constraint sum(i,j in dimension)(chessboard[i,j]==1)<=num_blackBoxes;
 constraint sum(i,j in dimension)(chessboard[i,j]=2)<=ls_on_board*3;
 constraint sum(i,j in dimension)(chessboard[i,j]=3)<=squares_on_board*4;
 constraint sum(i,j in dimension)(chessboard[i,j]=4)<=rectangles_on_board*3;
-constraint sum(i,j in dimension)(chessboard[i,j]=5)<=free_space_A;
+%constraint sum(i,j in dimension)(chessboard[i,j]=5)<=free_space_A;
 
 % making the rectangle of free space
 constraint i1<=N /\ i1 >= 1;
@@ -151,7 +156,6 @@ constraint i2>=i1;
 constraint j2>=j1;
 
 constraint forall(iS,iF in i1..i2, jS,jF in j1..j2)(free(iS,iF,jS,jF));
-var int: zeros = sum(i,j in dimension)(chessboard[i,j]=0);
 
 % *******************
 % SOLVING 
@@ -160,15 +164,17 @@ var int: zeros = sum(i,j in dimension)(chessboard[i,j]=0);
 var int: total_figures_area = R*3 + S*4 + L*3;
 var int: total_weight = rectangles_on_board*rectangle_weight + squares_on_board*square_weight + ls_on_board*l_shape_weight;
 
-%solve maximize(if total_figures_area < (N*N - num_blackBoxes) then free_space_A else total_weight endif);
-solve maximize total_weight;
+solve maximize(if total_figures_area < (N*N - num_blackBoxes)
+                then free_space_A 
+                else total_weight 
+                endif);
+%solve maximize free_space_A;
 
 % *******************
 % OUTPUT
 % *******************
 
-output [ show_int(2,chessboard[i,j]) ++ 
+output [show_int(2,chessboard[i,j]) ++ 
          if j == N then "\n" else " " endif |
          i in dimension, j in dimension 
-]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\nL coordinates ", show(lc)]++["\nFree space rectangle area: ",show(free_space_A)]++["\nTotal weight: ",show(total_weight)]++
-["\n i1: ",show(i1),"\n i2: ",show(i2),"\n j1: ",show(j1),"\n j2: ",show(j2)];
+]++["\nSquares coordinates ",show(sq)]++["\nRectangles coordinates ",show(rect)]++["\nL coordinates ", show(lc)]++["\nFree space rectangle area: ",show(free_space_A)]++["\nTotal weight: ",show(total_weight)];
