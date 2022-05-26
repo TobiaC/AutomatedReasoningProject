@@ -45,7 +45,7 @@ int: rectangle_weight = 2;
 int: l_shape_weight = 3;
 int: square_weight = 4;
 
-array[dimension,dimension] of var 0..5: chessboard;
+array[dimension,dimension] of var 0..4: chessboard;
 
 %% the following are for representing the rectangle of free space
 var int: i1; 
@@ -59,7 +59,7 @@ var int: free_space_A = abs(i2-i1+1)*abs(j2-j1+1);
 % PREDICATES
 % *******************
 
-predicate free(var int: i1,var int:i2,var int:j1,var int:j2) = forall(i in i1..i2, j in j1..j2)(chessboard[i,j]=5);
+predicate free(var int: i1,var int:i2,var int:j1,var int:j2) = forall(i in i1..i2, j in j1..j2)(chessboard[i,j]=0);
 
 
 predicate square(var int: i1, var int: i2, var int: j1, var int: j2) = 
@@ -163,11 +163,11 @@ constraint forall(iS,iF in i1..i2, jS,jF in j1..j2)(free(iS,iF,jS,jF));
 var int: total_figures_area = R*3 + S*4 + L*3;
 var int: total_weight = rectangles_on_board * rectangle_weight + squares_on_board * square_weight + ls_on_board * l_shape_weight;
 
-% solve maximize(if total_figures_area < (N*N - num_blackBoxes)
-%                 then free_space_A 
-%                 else total_weight 
-%                 endif);
-solve maximize free_space_A;
+solve maximize(if total_figures_area < (N*N - num_blackBoxes)
+                then free_space_A 
+                else total_weight 
+                endif);
+%solve maximize total_weight;
 
 % *******************
 % OUTPUT

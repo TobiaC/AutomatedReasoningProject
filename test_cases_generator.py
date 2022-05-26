@@ -3,8 +3,6 @@
 
 from random import randint
 
-
-
 class TestGenerator:
 
     board_sizes = [10,15,20,25]
@@ -35,8 +33,8 @@ class TestGenerator:
         coord = []
         for _ in range(0,number_of_black_boxes):
             # [|1,1,|2,2,|3,3|]
-            x = randint(0,board_size)
-            y = randint(0,board_size)
+            x = randint(1,board_size)
+            y = randint(1,board_size)
             coord.append("|" + str(x) + "," + str(y))
         coordinates = (", ".join(coord))
         coordinates = "[" + coordinates + "|]"
@@ -46,14 +44,6 @@ class TestGenerator:
 def main():
     test_generator = TestGenerator()
     test_generator.generate_chessboard_instance()
-
-
-
-
-
-
-
-
 
 
 if __name__=='__main__':
